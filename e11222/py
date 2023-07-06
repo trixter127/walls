@@ -1,0 +1,29 @@
+from fabric import Connection
+
+
+def connect_to_ssh_server(host, username, port=22, password=None, keyfile=None, jumpbox_con=None):
+    try:
+        connect_kwargs = {"password": password}
+        if keyfile:
+            connect_kwargs.update({"key_filename": keyfile})
+        if jumpbox_con:
+            target_conn = Connection(
+                host=host, port=port, user=username, connect_kwargs=connect_kwargs, gateway=jumpbox_con)
+            return target_conn
+        conn = Connection(host=host, port=port, user=username,
+                          connect_kwargs=connect_kwargs)
+        return conn
+    except Exception as e:
+        print(f"Failed to connect to ssh server: {e}")
+        return None
+
+
+def execute_command(connection, command):
+    try:
+        result = connection.run(command, warn=True)
+        output = result.stdout.strip()
+        errors = result.stderr.strip()
+        return output, errors
+    except Exception as e:
+        print(f"Failed to execute command on server: {e}")
+        return None, None
